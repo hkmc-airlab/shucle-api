@@ -1,718 +1,700 @@
----
-swagger: "2.0"
+openapi: 3.0.0
 info:
-  description: "This is a sample server Petstore server.  You can find out more about\
-    \ Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).\
-    \  For this sample, you can use the api key `special-key` to test the authorization\
-    \ filters."
-  version: "1.0.5"
-  title: "Swagger Petstore"
-  termsOfService: "http://swagger.io/terms/"
-  contact:
-    email: "apiteam@swagger.io"
-  license:
-    name: "Apache 2.0"
-    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "petstore.swagger.io"
-basePath: "/v2"
+  description: 셔클 플랫폼과 PM 운영사간의 연동을 위한 API
+  version: "1.0.0"
+  title: Shucle PM API
+servers:
+  - url: '-'
 tags:
-- name: "pet"
-  description: "Everything about your Pets"
-  externalDocs:
-    description: "Find out more"
-    url: "http://swagger.io"
-- name: "store"
-  description: "Access to Petstore orders"
-- name: "user"
-  description: "Operations about user"
-  externalDocs:
-    description: "Find out more about our store"
-    url: "http://swagger.io"
-schemes:
-- "https"
-- "http"
+  - name: PM API
+    description: PM 운영사에서 제공하는 API
+  - name: Shucle API
+    description: 셔클 플랫폼에서 제공하는 API
 paths:
-  /pet/{petId}/uploadImage:
-    post:
-      tags:
-      - "pet"
-      summary: "uploads an image"
-      description: ""
-      operationId: "uploadFile"
-      consumes:
-      - "multipart/form-data"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "petId"
-        in: "path"
-        description: "ID of pet to update"
-        required: true
-        type: "integer"
-        format: "int64"
-      - name: "additionalMetadata"
-        in: "formData"
-        description: "Additional data to pass to server"
-        required: false
-        type: "string"
-      - name: "file"
-        in: "formData"
-        description: "file to upload"
-        required: false
-        type: "file"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/ApiResponse"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-  /pet:
-    post:
-      tags:
-      - "pet"
-      summary: "Add a new pet to the store"
-      description: ""
-      operationId: "addPet"
-      consumes:
-      - "application/json"
-      - "application/xml"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Pet object that needs to be added to the store"
-        required: true
-        schema:
-          $ref: "#/definitions/Pet"
-      responses:
-        405:
-          description: "Invalid input"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-    put:
-      tags:
-      - "pet"
-      summary: "Update an existing pet"
-      description: ""
-      operationId: "updatePet"
-      consumes:
-      - "application/json"
-      - "application/xml"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Pet object that needs to be added to the store"
-        required: true
-        schema:
-          $ref: "#/definitions/Pet"
-      responses:
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Pet not found"
-        405:
-          description: "Validation exception"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-  /pet/findByStatus:
+  /regions:
     get:
       tags:
-      - "pet"
-      summary: "Finds Pets by status"
-      description: "Multiple status values can be provided with comma separated strings"
-      operationId: "findPetsByStatus"
-      produces:
-      - "application/json"
-      - "application/xml"
+        - PM API
+      summary: 서비스 지역 목록 조회
+      description: PM 서비스를 제공하는 지역 목록을 조회합니다.
+      operationId: listRegions
       parameters:
-      - name: "status"
-        in: "query"
-        description: "Status values that need to be considered for filter"
-        required: true
-        type: "array"
-        items:
-          type: "string"
+        - name: fields
+          in: query
+          schema:
+            type: string
+            enum: [updateTime]
+          description: 지역 목록이 업데이트된 시간만 받아올 때 사용합니다.
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updateTime:
+                    type: string
+                    format: date-time
+                  regions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/region'
+  /pricingPlans:
+    get:
+      tags:
+        - PM API
+      summary: 요금 목록 조회
+      description: 요금 목록을 조회합니다.
+      operationId: listPricingPlans
+      parameters:
+        - name: fields
+          in: query
+          schema:
+            type: string
+            enum: [updateTime]
+          description: 요금 목록이 업데이트된 시간만 받아올 때 사용합니다.
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updateTime:
+                    type: string
+                    format: date-time
+                  pricingPlans:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/pricingPlan'
+  /vehicleTypes:
+    get:
+      tags:
+        - PM API
+      summary: 제공가능한 PM 종류 목록 조회
+      description: 제공가능한 PM 종류 목록을 조회합니다.
+      operationId: listVehicleTypes
+      parameters:
+        - name: fields
+          in: query
+          schema:
+            type: string
+            enum: [updateTime]
+          description: PM 종류 목록이 업데이트된 시간만 받아올 때 사용합니다.
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updateTime:
+                    type: string
+                    format: date-time
+                  vehicleTypes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/vehicleType'
+  /vehicles/searchAvailable:
+    get:
+      tags:
+        - PM API
+      summary: 이용가능한 PM 검색
+      description: 이용가능한 PM을 검색합니다.
+      operationId: searchAvailableVehicles
+      parameters:
+        - name: fromlat
+          in: query
+          schema:
+            type: string
+          description: 출발지 위도
+          required: true
+        - name: fromlng
+          in: query
+          schema:
+            type: string
+          description: 출발지 경도
+          required: true
+        - name: radius
+          in: query
+          schema:
+            type: integer
+          description: 검색 범위 (m)
+          required: true
+        - name: targetVehicleTypeIds
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          description: 검색할 vehicle type ID 목록. 주어지지 않으면 모든 vehicle type 검색
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+        - name: pageToken
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vehicles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/vehicle'
+                  nextPageToken:
+                    type: string
+                    description: 다음 페이지 조회용 토큰                
+  '/vehicles/{id}':
+    get:
+      tags:
+        - PM API
+      summary: PM 정보 조회
+      description: 특정 PM의 정보를 조회합니다.
+      operationId: getVehicle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: vehicle ID
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/vehicle'
+  '/vehicles/{id}/toot':
+    post:
+      tags:
+        - PM API
+      summary: PM 벨 울리기
+      operationId: tootVehicle
+      parameters:
+        - name: id
+          in: path
+          description: vehicle ID
+          required: true
+          schema:
+            type: string
+        - name: userCoordinates
+          in: query
+          schema:
+            $ref: '#/components/schemas/coordinates'
+          required: true
+      responses:
+        '200':
+          description: successful operation
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+  /booking/start:
+    post:
+      tags:
+        - PM API
+      summary: PM 대여하기
+      operationId: startBooking
+      requestBody:
+        $ref: '#/components/requestBodies/startBooking'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/booking'
+  '/booking/{id}/finish':
+    post:
+      tags:
+        - PM API
+      summary: PM 대여 종료
+      operationId: finishBooking
+      parameters:
+        - name: id
+          in: path
+          description: booking ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/finishBooking'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/booking'
+  '/booking/{id}/updateParkingImage':
+    post:
+      tags:
+        - PM API
+      summary: PM 대여 종료 후 주차 이미지 등록
+      operationId: updateParkingImage
+      parameters:
+        - name: id
+          in: path
+          description: booking ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                imageUrl:
+                  description: 주차 이미지 URL
+                  type: string
+                  format: uri
+      responses:
+        '200':
+          description: successful operation
+  '/booking/{id}':
+    get:
+      tags:
+        - PM API
+      summary: PM 대여 정보 조회
+      operationId: getBooking
+      parameters:
+        - name: id
+          in: path
+          description: booking ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/booking'
+  /payments:
+    get:
+      tags:
+        - Shucle API
+      summary: 결제 내역 목록 조회
+      description: 결제 내역 목록 조회
+      operationId: listPayments
+      parameters:
+        - name: startTime
+          in: query
+          schema:
+            type: string
+            format: date-time
+          required: true
+          description: 목록 조회 기간 시작 시각
+        - name: endTime
+          in: query
+          schema:
+            type: string
+            format: date-time
+          required: true
+          description: 목록 조회 기간 종료 시각
+        - name: pageSize
+          in: query
+          schema:
+            type: string
+        - name: pageToken
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/payment'
+                  nextPageToken:
+                    type: string
+components:
+  schemas:
+    booking:
+      type: object
+      properties:
+        id:
+          type: string
+        from:
+          $ref: '#/components/schemas/place'
+        to:
+          $ref: '#/components/schemas/place'
+        state:
+          type: string
+          enum: 
+            - CONFIRMED
+            - STARTED
+            - PAUSED
+            - FINISHED
+        departureTime:
+          type: string
+          format: date-time
+        arrivalTime:
+          type: string
+          format: date-time
+        distance:
+          type: integer
+          description: 이동 거리 (m)
+        vehicle:
+          $ref: '#/components/schemas/vehicle'
+        fare:
+          $ref: '#/components/schemas/fare'
+    coordinates:
+      type: object
+      properties:
+        lat:
+          type: number
+          description: 위도
+        lng:
+          type: number
+          description: 경도
+    error:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: Shucle PM API에서 사용하는 error code.
+        title:
+          type: string
+          description: 에러에 대한 간단한 설명
+        status:
+          type: integer
+          description: HTTP status code
+        detail:
+          type: string
+          description: 에러에 대한 자세한 설명          
+    place:
+      type: object
+      properties:
+        displayName:
+          type: string
+        stationId:
+          type: string
+        coordinates:
+          $ref: '#/components/schemas/coordinates'
+    pricingPlan:
+      type: object
+      description: 요금 정보
+      required: [id, displayName, currencyCode, price, description]
+      properties:
+        id:
+          type: string
+          description: 요금 ID
+        displayName:
+          type: string
+          description: 요금 이름
+        url:
+          type: string
+          format: uri
+          description: 요금 안내 URL
+        currencyCode:
+          type: string
+          description: 통화 코드 (ISO 4217)
+        price:
+          type: number
+          description: 기본 요금
+          minimum: 0
+        description:
+          type: string
+          description: 고객에게 제공되는 요금제 설명
+        perKmPricing:
+          type: array
+          description: km 당 추가 요금 구간 목록
+          items:
+            type: object
+            required: [start, rate, interval]
+            properties:              
+              start:
+                type: integer
+                description: 해당 구간의 시작 km
+              end:
+                type: integer
+                description: 해당 구간의 끝 km
+              rate:
+                type: number
+                description: start 이후 매 interval km 마다 부가되는 추가 요금
+              interval:
+                type: integer
+                description: 추가 요금이 부가되는 간격 (interval km마다 rate 만큼의 요금이 부여)
+        perMinPricing:
+          type: array
+          description: 분당 추가 요금 구간 목록
+          required: [start, rate, interval]
+          items:
+            type: object
+            properties:              
+              start:
+                type: integer
+                description: 해당 구간의 시작 시간(분)
+              end:
+                type: integer
+                description: 해당 구간의 끝 시간(분)
+              rate:
+                type: number
+                description: start 이후 매 interval 분마다 부가되는 추가 요금
+              interval:
+                type: integer
+                description: 추가 요금이 부가되는 간격 (interval 분마다 rate 만큼의 요금이 부여)
+    region:
+      type: object
+      description: 서비스 지역
+      required: [type, features, properties]
+      properties:
+        type:
+          type: string
+          enum: [FeatureCollection]
+          description: GeoJSON FeatureCollection (https://geojson.org/geojson-spec.html)
+        features:
+          type: array
+          items:
+            title: GeoJSON Feature
+            type: object
+            description: 지역 내 구역
+            required: [type, geometry, properties]
+            properties:
+              type:
+                type: string
+                enum: [Feature]
+              geometry:
+                title: GeoJSON MultiPolygon
+                description: 구역의 형태
+                properties:
+                  type:
+                    type: string
+                    enum: [MultiPolygon]
+                  coordinates:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: array
+                        minItems: 4
+                        items:
+                          type: array
+                          minItems: 2
+                          items:
+                            type: number
+              properties:
+                type: object
+                properties:
+                  rules: 
+                    type: array
+                    description: 구역의 속성
+                    items: 
+                      type: object
+                      required: [pickupAllowed, dropOffAllowed, rideThroughAllowed]
+                      properties:
+                        vehicleTypeIds:
+                          type: array
+                          description: 해당 속성이 적용되는 vehicle type ID 목록, 비어있으면 모든 vechile type에 적용
+                          items: 
+                            type: string
+                        pickupAllowed:
+                          type: boolean
+                          description: 승차 가능 여부
+                        dropOffAllowed:
+                          type: boolean
+                          description: 하차 가능 여부
+                        rideThroughAllowed:
+                          type: boolean
+                          description: 주행 가능 여부
+                        maximumSpeedKph:
+                          type: integer
+                          description: 최대 제한 속도    
+                          minimum: 0
+        properties:
+          type: object
+          properties:
+            id:
+              type: string
+              description: 지역 ID
+            displayName:
+              type: string
+              description: 지역 이름
+            updateTime:
+              type: string
+              description: 지역정보 마지막 수정 시각
+              format: date-time
+          required: [id, updateTime]
+    vehicle:
+      type: object
+      required: [id, location, isReserved, vehicleTypeId, pricingPlanId]
+      properties:
+        id:
+          type: string
+          description: vehicle ID
+        location:          
+          $ref: '#/components/schemas/place'
+        isReserved:
+          type: boolean
+          description: 예약 여부
+        currentRangeMeters:
+          type: integer
+          description: 현재 이동 가능 거리 (m)
+          minimum: 0
+        currentFuelPercent:
+          type: number
+          description: 현재 연료 상태 (%)
+          minimum: 0
+        vehicleTypeId:
+          type: string
+          description: 해당 vehicle이 속한 vehicle type
+        pricingPlanId:
+          type: string
+          description: 해당 vehicle에 적용되는 요금제
+        imageUrl:
+          type: string
+          description: 고객의 vehicle을 확인하는데 도움을 줄 수 있는 이미지 URL
+    vehicleType:
+      type: object
+      required: [id, displayName, formFactor, propulsionType, driverLicenseRequired]
+      properties:
+        id:
+          type: string
+          description: vehicle type ID
+        displayName:
+          type: string
+          description: vehicle type 이름
+        formFactor:
+          type: string
           enum:
-          - "available"
-          - "pending"
-          - "sold"
-          default: "available"
-        collectionFormat: "multi"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Pet"
-        400:
-          description: "Invalid status value"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-  /pet/findByTags:
-    get:
-      tags:
-      - "pet"
-      summary: "Finds Pets by tags"
-      description: "Multiple tags can be provided with comma separated strings. Use\
-        \ tag1, tag2, tag3 for testing."
-      operationId: "findPetsByTags"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "tags"
-        in: "query"
-        description: "Tags to filter by"
-        required: true
-        type: "array"
-        items:
-          type: "string"
-        collectionFormat: "multi"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Pet"
-        400:
-          description: "Invalid tag value"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-      deprecated: true
-  /pet/{petId}:
-    get:
-      tags:
-      - "pet"
-      summary: "Find pet by ID"
-      description: "Returns a single pet"
-      operationId: "getPetById"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "petId"
-        in: "path"
-        description: "ID of pet to return"
-        required: true
-        type: "integer"
-        format: "int64"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Pet"
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Pet not found"
-      security:
-      - api_key: []
-    post:
-      tags:
-      - "pet"
-      summary: "Updates a pet in the store with form data"
-      description: ""
-      operationId: "updatePetWithForm"
-      consumes:
-      - "application/x-www-form-urlencoded"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "petId"
-        in: "path"
-        description: "ID of pet that needs to be updated"
-        required: true
-        type: "integer"
-        format: "int64"
-      - name: "name"
-        in: "formData"
-        description: "Updated name of the pet"
-        required: false
-        type: "string"
-      - name: "status"
-        in: "formData"
-        description: "Updated status of the pet"
-        required: false
-        type: "string"
-      responses:
-        405:
-          description: "Invalid input"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-    delete:
-      tags:
-      - "pet"
-      summary: "Deletes a pet"
-      description: ""
-      operationId: "deletePet"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "api_key"
-        in: "header"
-        required: false
-        type: "string"
-      - name: "petId"
-        in: "path"
-        description: "Pet id to delete"
-        required: true
-        type: "integer"
-        format: "int64"
-      responses:
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Pet not found"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-  /store/order:
-    post:
-      tags:
-      - "store"
-      summary: "Place an order for a pet"
-      description: ""
-      operationId: "placeOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "order placed for purchasing the pet"
-        required: true
-        schema:
-          $ref: "#/definitions/Order"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Order"
-        400:
-          description: "Invalid Order"
-  /store/order/{orderId}:
-    get:
-      tags:
-      - "store"
-      summary: "Find purchase order by ID"
-      description: "For valid response try integer IDs with value >= 1 and <= 10.\
-        \ Other values will generated exceptions"
-      operationId: "getOrderById"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "orderId"
-        in: "path"
-        description: "ID of pet that needs to be fetched"
-        required: true
-        type: "integer"
-        maximum: 10
-        minimum: 1
-        format: "int64"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Order"
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Order not found"
-    delete:
-      tags:
-      - "store"
-      summary: "Delete purchase order by ID"
-      description: "For valid response try integer IDs with positive integer value.\
-        \ Negative or non-integer values will generate API errors"
-      operationId: "deleteOrder"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "orderId"
-        in: "path"
-        description: "ID of the order that needs to be deleted"
-        required: true
-        type: "integer"
-        minimum: 1
-        format: "int64"
-      responses:
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Order not found"
-  /store/inventory:
-    get:
-      tags:
-      - "store"
-      summary: "Returns pet inventories by status"
-      description: "Returns a map of status codes to quantities"
-      operationId: "getInventory"
-      produces:
-      - "application/json"
-      parameters: []
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: "object"
-            additionalProperties:
-              type: "integer"
-              format: "int32"
-      security:
-      - api_key: []
-  /user/createWithArray:
-    post:
-      tags:
-      - "user"
-      summary: "Creates list of users with given input array"
-      description: ""
-      operationId: "createUsersWithArrayInput"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "List of user object"
-        required: true
-        schema:
-          type: "array"
+          - SCOOTER
+          - BICYCLE
+        propulsionType:
+          type: string
+          enum:
+          - HUMAN
+          - ELECTRIC
+          - ELECTRIC_ASSIST
+          description: 해당 vehicle이 사용하는 동력
+        riderCapacity:
+          type: integer
+          description: 최대 탑승 가능 인원 수 (운전자 포함)
+          minimum: 0
+        maxRangeMeters:
+          type: integer
+          description: 최대 이동가능 거리 (m, 최대 연료 상태 일 때)
+          minimum: 0
+        maxPermittedSpeed:
+          type: integer
+          description: 최대 허용 속도 (km/h)
+        color:
+          type: string
+          description: vehicle의 색깔 (e.g., "#000000")
+        imageUrl:
+          type: string
+          format: uri
+          description: 고객의 vehicle type을 확인하는데 도움을 줄 수 있는 이미지 URL
+        iconUrl:
+          type: string
+          format: uri
+          description: 해당 vehicle type을 나타낼 수 있는 아이콘 URL
+        iconUpdateTime:
+          type: string
+          format: date-time
+          description: 아이콘이 업데이트된 시간
+        driverLicenseRequired:
+          type: boolean
+          description: 운전면허 소지 필요 여부
+    fare:
+      type: object
+      description: 요금 정보, 모든 part의 합이 총 요금
+      properties:
+        description:
+          type: string
+          description: 요금에 대한 설명
+        parts:
+          type: array
           items:
-            $ref: "#/definitions/User"
-      responses:
-        default:
-          description: "successful operation"
-  /user/createWithList:
-    post:
-      tags:
-      - "user"
-      summary: "Creates list of users with given input array"
-      description: ""
-      operationId: "createUsersWithListInput"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "List of user object"
-        required: true
-        schema:
-          type: "array"
-          items:
-            $ref: "#/definitions/User"
-      responses:
-        default:
-          description: "successful operation"
-  /user/{username}:
-    get:
-      tags:
-      - "user"
-      summary: "Get user by user name"
-      description: ""
-      operationId: "getUserByName"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "username"
-        in: "path"
-        description: "The name that needs to be fetched. Use user1 for testing. "
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "successful operation"
+            $ref: '#/components/schemas/farePart'        
+    farePart:
+      type: object
+      properties:
+        amount:
+          type: number
+          description: 요금
+        currencyCode:
+          type: integer
+          description: 통화 코드 (ISO 4217)
+        type:
+          type: string 
+          enum: [FARE, FINE, REFUND]
+          description: 부가된 요금 타입
+        description:
+          type: string
+          description: 해당 part에 대한 설명
+    payment:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 결제 ID
+        bookingId:
+          type: string
+          description: 관련된 booking ID
+        fare:
+          $ref: '#/components/schemas/fare'
+        createTime:
+          type: string
+          format: date-time
+          description: 결제 생성 시점
+        description:
+          type: string
+          description: 결제에 대한 설명
+  requestBodies:
+    startBooking:
+      content:
+        application/json:
           schema:
-            $ref: "#/definitions/User"
-        400:
-          description: "Invalid username supplied"
-        404:
-          description: "User not found"
-    put:
-      tags:
-      - "user"
-      summary: "Updated user"
-      description: "This can only be done by the logged in user."
-      operationId: "updateUser"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "username"
-        in: "path"
-        description: "name that need to be updated"
-        required: true
-        type: "string"
-      - in: "body"
-        name: "body"
-        description: "Updated user object"
-        required: true
-        schema:
-          $ref: "#/definitions/User"
-      responses:
-        400:
-          description: "Invalid user supplied"
-        404:
-          description: "User not found"
-    delete:
-      tags:
-      - "user"
-      summary: "Delete user"
-      description: "This can only be done by the logged in user."
-      operationId: "deleteUser"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "username"
-        in: "path"
-        description: "The name that needs to be deleted"
-        required: true
-        type: "string"
-      responses:
-        400:
-          description: "Invalid username supplied"
-        404:
-          description: "User not found"
-  /user/login:
-    get:
-      tags:
-      - "user"
-      summary: "Logs user into the system"
-      description: ""
-      operationId: "loginUser"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "username"
-        in: "query"
-        description: "The user name for login"
-        required: true
-        type: "string"
-      - name: "password"
-        in: "query"
-        description: "The password for login in clear text"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "successful operation"
-          headers:
-            X-Expires-After:
-              type: "string"
-              format: "date-time"
-              description: "date in UTC when token expires"
-            X-Rate-Limit:
-              type: "integer"
-              format: "int32"
-              description: "calls per hour allowed by the user"
+            type: object
+            properties:
+              targetVehicle:
+                type: object
+                description: 대여하려는 vehicle를 특정할 수 있는 정보
+                properties:
+                  method:
+                    type: string
+                    enum: [QR, MANUAL_ENTRY]
+                  data:
+                    type: string
+                    description: "QR: base64 string, MANUAL_ENTRY: 수동 입력 코드"
+              userCoordinates:
+                $ref: '#/components/schemas/coordinates'
+      description: List of user object
+      required: true
+    finishBooking:
+      content:
+        application/json:
           schema:
-            type: "string"
-        400:
-          description: "Invalid username/password supplied"
-  /user/logout:
-    get:
-      tags:
-      - "user"
-      summary: "Logs out current logged in user session"
-      description: ""
-      operationId: "logoutUser"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters: []
-      responses:
-        default:
-          description: "successful operation"
-  /user:
-    post:
-      tags:
-      - "user"
-      summary: "Create user"
-      description: "This can only be done by the logged in user."
-      operationId: "createUser"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Created user object"
-        required: true
-        schema:
-          $ref: "#/definitions/User"
-      responses:
-        default:
-          description: "successful operation"
-securityDefinitions:
-  api_key:
-    type: "apiKey"
-    name: "api_key"
-    in: "header"
-  petstore_auth:
-    type: "oauth2"
-    authorizationUrl: "https://petstore.swagger.io/oauth/authorize"
-    flow: "implicit"
-    scopes:
-      read:pets: "read your pets"
-      write:pets: "modify pets in your account"
-definitions:
-  ApiResponse:
-    type: "object"
-    properties:
-      code:
-        type: "integer"
-        format: "int32"
-      type:
-        type: "string"
-      message:
-        type: "string"
-  Category:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      name:
-        type: "string"
-    xml:
-      name: "Category"
-  Pet:
-    type: "object"
-    required:
-    - "name"
-    - "photoUrls"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      category:
-        $ref: "#/definitions/Category"
-      name:
-        type: "string"
-        example: "doggie"
-      photoUrls:
-        type: "array"
-        xml:
-          wrapped: true
-        items:
-          type: "string"
-          xml:
-            name: "photoUrl"
-      tags:
-        type: "array"
-        xml:
-          wrapped: true
-        items:
-          xml:
-            name: "tag"
-          $ref: "#/definitions/Tag"
-      status:
-        type: "string"
-        description: "pet status in the store"
-        enum:
-        - "available"
-        - "pending"
-        - "sold"
-    xml:
-      name: "Pet"
-  Tag:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      name:
-        type: "string"
-    xml:
-      name: "Tag"
-  Order:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      petId:
-        type: "integer"
-        format: "int64"
-      quantity:
-        type: "integer"
-        format: "int32"
-      shipDate:
-        type: "string"
-        format: "date-time"
-      status:
-        type: "string"
-        description: "Order Status"
-        enum:
-        - "placed"
-        - "approved"
-        - "delivered"
-      complete:
-        type: "boolean"
-    xml:
-      name: "Order"
-  User:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      username:
-        type: "string"
-      firstName:
-        type: "string"
-      lastName:
-        type: "string"
-      email:
-        type: "string"
-      password:
-        type: "string"
-      phone:
-        type: "string"
-      userStatus:
-        type: "integer"
-        format: "int32"
-        description: "User Status"
-    xml:
-      name: "User"
-externalDocs:
-  description: "Find out more about Swagger"
-  url: "http://swagger.io"
+            type: object
+            properties:
+              isForced:
+                type: boolean
+              userCoordinates:
+                $ref: '#/components/schemas/coordinates'
+      description: List of user object
+      required: true
+  responses:
+    403Forbidden:
+      description: 엑세스 권한 없음
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/error"
