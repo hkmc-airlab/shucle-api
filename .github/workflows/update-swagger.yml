@@ -1,9 +1,13 @@
 name: Update Swagger UI
 on:
-  [ deployment_status ]
+  workflow_run:
+    workflows: ["pages-build-deployment"]
+    types:
+      - completed
 
 jobs:
   updateSwagger:
+    if:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
