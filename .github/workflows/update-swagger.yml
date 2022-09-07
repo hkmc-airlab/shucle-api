@@ -1,7 +1,6 @@
 name: Update Swagger UI
 on:
-  push:
-    branches: [ master ]
+  [ deployment_status ]
 
 jobs:
   updateSwagger:
