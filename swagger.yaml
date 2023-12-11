@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   description: 셔클 플랫폼과 PM 운영사간의 연동을 위한 API
-  version: "1.0.0"
+  version: "1.0.1"
   title: Shucle PM API
 servers:
   - url: '-'
@@ -11,6 +11,125 @@ tags:
   - name: Shucle API
     description: 셔클 플랫폼에서 제공하는 API
 paths:
+  /auth:
+    post:
+      tags:
+        - PM API
+      summary: 인증
+      description: API 요청을 위한 토큰을 생성합니다.
+      operationId: authClient
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                service_key:
+                  description: service key
+                  type: string
+                access_secret:
+                  description: secret
+                  type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/common'
+                  - type: object
+                    properties:
+                      response:
+                        type: object
+                        $ref: '#/components/schemas/auth'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500InternalServerError'
+  /users:
+    post:
+      tags:
+        - PM API
+      summary: 회원가입
+      description: 회원 가입을 처리할 수 있도록 합니다.
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  description: user id
+                  type: string
+                mobile_number:
+                  description: mobile number
+                  type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/common'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500InternalServerError'
+  '/users/{user_id}':
+    put:
+      tags:
+        - PM API
+      summary: 회원정보 수정
+      description: 회원 정보를 수정합니다.
+      operationId: updateUser
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mobile_number:
+                  description: mobile number
+                  type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/common'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500InternalServerError'
   /regions:
     get:
       tags:
@@ -48,13 +167,13 @@ paths:
           $ref: '#/components/responses/404NotFound'
         '500':
           $ref: '#/components/responses/500InternalServerError'
-  /pricingPlans:
+  /rates:
     get:
       tags:
         - PM API
       summary: 요금 목록 조회
       description: 요금 목록을 조회합니다.
-      operationId: listPricingPlans
+      operationId: listRates
       parameters:
         - name: fields
           in: query
@@ -68,15 +187,22 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  updateTime:
-                    type: string
-                    format: date-time
-                  pricingPlans:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/pricingPlan'
+                allOf:
+                  - $ref: '#/components/schemas/common'
+                  - type: object
+                    properties:
+
+                      updateTime:
+                        type: string
+                        format: date-time
+                      response:
+                        type: object
+                        properties:
+                          list:
+                            type: array
+                            items:
+                              type: object
+                              $ref: '#/components/schemas/rates'
         '400':
           $ref: '#/components/responses/400BadRequest'
         '401':
@@ -85,7 +211,46 @@ paths:
           $ref: '#/components/responses/404NotFound'
         '500':
           $ref: '#/components/responses/500InternalServerError'
-  /vehicleTypes:
+  '/location/point-info':
+    get:
+      tags:
+        - PM API
+      summary: 좌표 정보 조회
+      description: 해당 좌표의 서비스 정보를 조회합니다.
+      operationId: getPointInfo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lat:
+                  description: 위도
+                  type: number
+                lng:
+                  description: 경도
+                  type: number
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/common'
+                properties:
+                  response:
+                    $ref: '#/components/schemas/pointInfo'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500InternalServerError'
+  /location/vehicles/types:
     get:
       tags:
         - PM API
@@ -105,15 +270,18 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  updateTime:
-                    type: string
-                    format: date-time
-                  vehicleTypes:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/vehicleType'
+                allOf:
+                  - $ref: '#/components/schemas/common'
+                  - type: object
+                    properties:
+                      response:
+                        type: object
+                        properties:
+                          list:
+                            type: array
+                            items:
+                              type: object
+                              $ref: '#/components/schemas/vehicleType'
         '400':
           $ref: '#/components/responses/400BadRequest'
         '401':
@@ -122,62 +290,49 @@ paths:
           $ref: '#/components/responses/404NotFound'
         '500':
           $ref: '#/components/responses/500InternalServerError'
-  /vehicles/searchAvailable:
+  /location/vehicles:
     get:
       tags:
         - PM API
       summary: 이용가능한 PM 검색
       description: 이용가능한 PM을 검색합니다.
       operationId: searchAvailableVehicles
-      parameters:
-        - name: fromlat
-          in: query
-          schema:
-            type: string
-          description: 출발지 위도
-          required: true
-        - name: fromlng
-          in: query
-          schema:
-            type: string
-          description: 출발지 경도
-          required: true
-        - name: radius
-          in: query
-          schema:
-            type: integer
-          description: 검색 범위 (m)
-          required: true
-        - name: targetVehicleTypeIds
-          in: query
-          schema:
-            type: array
-            items:
-              type: string
-          description: 검색할 vehicle type ID 목록. 주어지지 않으면 모든 vehicle type 검색
-        - name: pageSize
-          in: query
-          schema:
-            type: integer
-        - name: pageToken
-          in: query
-          schema:
-            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ne_lat:
+                  description: 동북 위도
+                  type: number
+                ne_lng:
+                  description: 동북 경도
+                  type: number
+                sw_lat:
+                  description: 남서 위도
+                  type: number
+                sw_lng:
+                  description: 남서 경도
+                  type: number
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  vehicles:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/vehicle'
-                  nextPageToken:
-                    type: string
-                    description: 다음 페이지 조회용 토큰
+                allOf:
+                  - $ref: '#/components/schemas/common'
+                  - type: object
+                    properties:
+                      response:
+                        type: object
+                        properties:
+                          list:
+                            type: array
+                            items:
+                              type: object
+                              $ref: '#/components/schemas/vehicle'
         '400':
           $ref: '#/components/responses/400BadRequest'
         '401':
@@ -186,7 +341,7 @@ paths:
           $ref: '#/components/responses/404NotFound'
         '500':
           $ref: '#/components/responses/500InternalServerError'
-  '/vehicles/{id}':
+  '/location/vehicles/{vehicle_id}':
     get:
       tags:
         - PM API
@@ -194,19 +349,24 @@ paths:
       description: 특정 PM의 정보를 조회합니다.
       operationId: getVehicle
       parameters:
-        - name: id
+        - name: vehicle_id
           in: path
           required: true
           schema:
             type: string
-          description: vehicle ID
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/vehicle'
+                allOf:
+                  - $ref: '#/components/schemas/common'
+                  - type: object
+                    properties:
+                      response:
+                        type: object
+                        $ref: '#/components/schemas/vehicle'
         '400':
           $ref: '#/components/responses/400BadRequest'
         '401':
@@ -215,24 +375,28 @@ paths:
           $ref: '#/components/responses/404NotFound'
         '500':
           $ref: '#/components/responses/500InternalServerError'
-  '/vehicles/{id}/toot':
+  '/location/vehicles/{vehicle_id}/toot':
     post:
       tags:
         - PM API
       summary: PM 벨 울리기
       operationId: tootVehicle
       parameters:
-        - name: id
+        - name: vehicle_id
           in: path
-          description: vehicle ID
           required: true
           schema:
             type: string
-        - name: userCoordinates
-          in: query
-          schema:
-            $ref: '#/components/schemas/coordinates'
-          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/coordinates'
+                - type: object
+                  properties:
+                    user_id:
+                      type: string
       responses:
         '200':
           description: successful operation
@@ -246,21 +410,24 @@ paths:
           $ref: '#/components/responses/404NotFound'
         '500':
           $ref: '#/components/responses/500InternalServerError'
-  /booking/start:
+  /trips:
     post:
       tags:
         - PM API
-      summary: PM 대여하기
-      operationId: startBooking
+      summary: PM 대여
+      operationId: startTrip
       requestBody:
-        $ref: '#/components/requestBodies/startBooking'
+        $ref: '#/components/requestBodies/startTrip'
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/booking'
+                $ref: '#/components/schemas/common'
+                properties:
+                  response:
+                    $ref: '#/components/schemas/trip'
         '400':
           $ref: '#/components/responses/400BadRequest'
         '401':
@@ -271,46 +438,15 @@ paths:
           $ref: '#/components/responses/404NotFound'
         '500':
           $ref: '#/components/responses/500InternalServerError'
-  '/booking/{id}/finish':
-    post:
+  '/trips/{trip_id}':
+    get:
       tags:
         - PM API
-      summary: PM 대여 종료
-      operationId: finishBooking
+      summary: PM 대여 정보 조회
+      operationId: getTrip
       parameters:
-        - name: id
+        - name: trip_id
           in: path
-          description: booking ID
-          required: true
-          schema:
-            type: string
-      requestBody:
-        $ref: '#/components/requestBodies/finishBooking'
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/booking'
-        '400':
-          $ref: '#/components/responses/400BadRequest'
-        '401':
-          $ref: '#/components/responses/401Unauthorized'
-        '404':
-          $ref: '#/components/responses/404NotFound'
-        '500':
-          $ref: '#/components/responses/500InternalServerError'
-  '/booking/{id}/updateParkingImage':
-    post:
-      tags:
-        - PM API
-      summary: PM 대여 종료 후 주차 이미지 등록
-      operationId: updateParkingImage
-      parameters:
-        - name: id
-          in: path
-          description: booking ID
           required: true
           schema:
             type: string
@@ -320,13 +456,53 @@ paths:
             schema:
               type: object
               properties:
-                imageUrl:
-                  description: 주차 이미지 URL
+                user_id:
+                  description: 사용자 ID
                   type: string
-                  format: uri
       responses:
         '200':
           description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/common'
+                properties:
+                  response:
+                    $ref: '#/components/schemas/trip'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500InternalServerError'
+  '/trips/{trip_id}/finish':
+    post:
+      tags:
+        - PM API
+      summary: PM 대여 종료
+      operationId: finishTrip
+      parameters:
+        - name: trip_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/finishTrip'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/common'
+                properties:
+                  response:
+                    $ref: '#/components/schemas/trip'
         '400':
           $ref: '#/components/responses/400BadRequest'
         '401':
@@ -335,26 +511,70 @@ paths:
           $ref: '#/components/responses/404NotFound'
         '500':
           $ref: '#/components/responses/500InternalServerError'
-  '/booking/{id}':
-    get:
+  '/trips/{trip_id}/force-finish':
+    post:
       tags:
         - PM API
-      summary: PM 대여 정보 조회
-      operationId: getBooking
+      summary: PM 대여 종료
+      operationId: finishForceTrip
       parameters:
-        - name: id
+        - name: trip_id
           in: path
-          description: booking ID
           required: true
           schema:
             type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  description: user ID
+                  type: string
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/booking'
+                $ref: '#/components/schemas/trip'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500InternalServerError'
+  '/trips/{trip_id}/parking':
+    post:
+      tags:
+        - PM API
+      summary: PM 대여 종료 후 주차 이미지 등록
+      operationId: updateParkingImage
+      parameters:
+        - name: trip_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  description: 사용자 ID
+                  type: string
+                parking_image:
+                  description: 주차 이미지 URL
+                  type: string
+                  format: uri
+      responses:
+        '200':
+          description: successful operation
         '400':
           $ref: '#/components/responses/400BadRequest'
         '401':
@@ -417,35 +637,36 @@ paths:
           $ref: '#/components/responses/500InternalServerError'
 components:
   schemas:
-    booking:
+    trip:
       type: object
       properties:
-        id:
-          type: string
-        from:
-          $ref: '#/components/schemas/place'
-        to:
-          $ref: '#/components/schemas/place'
+        trip_id:
+          type: integer
+        riding_distance:
+          type: integer
+        start_loc:
+          $ref: '#/components/schemas/coordinates'
+        end_loc:
+          $ref: '#/components/schemas/coordinates'
         state:
           type: string
           enum:
-            - CONFIRMED
-            - STARTED
-            - PAUSED
-            - FINISHED
-        departureTime:
-          type: string
-          format: date-time
-        arrivalTime:
-          type: string
-          format: date-time
-        distance:
+            - IDLE
+            - RIDING
+            - REPAIR
+        start_dt:
           type: integer
-          description: 이동 거리 (m)
+          description: 시작 시각 (unix timestamp)
+        end_dt:
+          type: integer
+          description: 종료 시각 (unix timestamp)
         vehicle:
           $ref: '#/components/schemas/vehicle'
-        fare:
-          $ref: '#/components/schemas/fare'
+        parking_price:
+          type: integer
+          description: 주차 요금
+        order_amount:
+          type: integer
     coordinates:
       type: object
       properties:
@@ -455,21 +676,6 @@ components:
         lng:
           type: number
           description: 경도
-    error:
-      type: object
-      properties:
-        code:
-          type: integer
-          description: Shucle PM API에서 사용하는 error code.
-        title:
-          type: string
-          description: 에러에 대한 간단한 설명
-        status:
-          type: integer
-          description: HTTP status code
-        detail:
-          type: string
-          description: 에러에 대한 자세한 설명
     place:
       type: object
       properties:
@@ -479,69 +685,44 @@ components:
           type: string
         coordinates:
           $ref: '#/components/schemas/coordinates'
-    pricingPlan:
+    rates:
       type: object
       description: 요금 정보
-      required: [id, displayName, currencyCode, price, description]
+      required: [region_id, displayName, currencyCode, price, description]
       properties:
-        id:
+        region_id:
           type: string
-          description: 요금 ID
-        displayName:
+          description: region id
+        vehicle_type_id:
           type: string
-          description: 요금 이름
-        url:
+          description: vehicle type id
+        type:
           type: string
-          format: uri
-          description: 요금 안내 URL
-        currencyCode:
+          description: 요금제 타입
+          enum:
+          - WEEKLY
+          - NIGHT
+        start_time:
           type: string
-          description: 통화 코드 (ISO 4217)
-        price:
-          type: number
-          description: 기본 요금
-          minimum: 0
-        description:
+          description: 시작시간 (ex. 0000 새벽 12시)
+        end_time:
           type: string
-          description: 고객에게 제공되는 요금제 설명
-        perKmPricing:
-          type: array
-          description: km 당 추가 요금 구간 목록
-          items:
-            type: object
-            required: [start, rate, interval]
-            properties:
-              start:
-                type: integer
-                description: 해당 구간의 시작 km
-              end:
-                type: integer
-                description: 해당 구간의 끝 km
-              rate:
-                type: number
-                description: start 이후 매 interval km 마다 부가되는 추가 요금
-              interval:
-                type: integer
-                description: 추가 요금이 부가되는 간격 (interval km마다 rate 만큼의 요금이 부여)
-        perMinPricing:
-          type: array
-          description: 분당 추가 요금 구간 목록
-          required: [start, rate, interval]
-          items:
-            type: object
-            properties:
-              start:
-                type: integer
-                description: 해당 구간의 시작 시간(분)
-              end:
-                type: integer
-                description: 해당 구간의 끝 시간(분)
-              rate:
-                type: number
-                description: start 이후 매 interval 분마다 부가되는 추가 요금
-              interval:
-                type: integer
-                description: 추가 요금이 부가되는 간격 (interval 분마다 rate 만큼의 요금이 부여)
+          description: 종료시간 (ex 0459 새벽 4시 59분)
+        title:
+          type: string
+          description: 요금제 이름
+        unlock_sec:
+          type: integer
+          description: 대여 시간
+        unlock_amount:
+          type: integer
+          description: 대여 기본 금액
+        unit_sec:
+          type: integer
+          description: 요금 기준 단위 시간(초)
+        unit_sec_per_amount:
+          type: integer
+          description: 요금 기준 단위 시간 당 비용
     region:
       type: object
       description: 서비스 지역
@@ -625,84 +806,47 @@ components:
           required: [id, updateTime]
     vehicle:
       type: object
-      required: [id, location, isReserved, vehicleTypeId, pricingPlanId]
+      required: [vehicle_sn, vehicle_type_id, location, battery, region_id, state, available_dest, parking_image]
       properties:
-        id:
+        vehicle_sn:
           type: string
-          description: vehicle ID
-        location:
-          $ref: '#/components/schemas/place'
-        isReserved:
-          type: boolean
-          description: 예약 여부
-        currentRangeMeters:
+          description: 기기 ID
+        vehicle_type_id:
           type: integer
-          description: 현재 이동 가능 거리 (m)
-          minimum: 0
-        currentFuelPercent:
-          type: number
-          description: 현재 연료 상태 (%)
-          minimum: 0
-        vehicleTypeId:
+          description: 기기 타입 ID
+        location:
+          $ref: '#/components/schemas/coordinates'
+        battery:
+          type: integer
+          description: 배터리 잔량
+        region_id:
+          type: integer
+          description: 지역 ID
+        state:
           type: string
-          description: 해당 vehicle이 속한 vehicle type
-        pricingPlanId:
+          description: 기기 상태
+          enum:
+            - IDLE
+            - IN_USE
+        available_dest:
+          type: integer
+          description: 이동 가능한 목적지
+        parking_image:
           type: string
-          description: 해당 vehicle에 적용되는 요금제
-        imageUrl:
-          type: string
-          description: 고객의 vehicle을 확인하는데 도움을 줄 수 있는 이미지 URL
+          description: 주차 이미지 URL
     vehicleType:
       type: object
-      required: [id, displayName, formFactor, propulsionType, driverLicenseRequired]
+      required: [id, name, type]
       properties:
         id:
-          type: string
+          type: integer
           description: vehicle type ID
-        displayName:
+        name:
           type: string
-          description: vehicle type 이름
-        formFactor:
+          description: vehicle type name
+        type:
           type: string
-          enum:
-            - SCOOTER
-            - BICYCLE
-        propulsionType:
-          type: string
-          enum:
-            - HUMAN
-            - ELECTRIC
-            - ELECTRIC_ASSIST
-          description: 해당 vehicle이 사용하는 동력
-        riderCapacity:
-          type: integer
-          description: 최대 탑승 가능 인원 수 (운전자 포함)
-          minimum: 0
-        maxRangeMeters:
-          type: integer
-          description: 최대 이동가능 거리 (m, 최대 연료 상태 일 때)
-          minimum: 0
-        maxPermittedSpeed:
-          type: integer
-          description: 최대 허용 속도 (km/h)
-        color:
-          type: string
-          description: vehicle의 색깔 (e.g., "#000000")
-        imageUrl:
-          type: string
-          format: uri
-          description: 고객의 vehicle type을 확인하는데 도움을 줄 수 있는 이미지 URL
-        iconUrl:
-          type: string
-          format: uri
-          description: 해당 vehicle type을 나타낼 수 있는 아이콘 URL
-        iconUpdateTime:
-          type: string
-          format: date-time
-          description: 아이콘이 업데이트된 시간
-        driverLicenseRequired:
-          type: boolean
-          description: 운전면허 소지 필요 여부
+          description: vehicle type
     fare:
       type: object
       description: 요금 정보, 모든 part의 합이 총 요금
@@ -748,37 +892,82 @@ components:
         description:
           type: string
           description: 결제에 대한 설명
+    error:
+      type: object
+      properties:
+        result_code:
+          type: integer
+          description: response code
+        message:
+          type: string
+          description: response description
+    auth:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: bearer token
+        token_type:
+          type: string
+          description: bearer
+        expires_in:
+          type: string
+          description: expire time (sec)
+    pointInfo:
+      type: object
+      properties:
+        area_type:
+          type: string
+          enum:
+            - ADD_CHARGE
+          description: 지역 타입
+        parking_price:
+          type: integer
+          description: 주차 요금
+    common:
+      type: object
+      properties:
+        result_code:
+          type: integer
+          description: response code
+        message:
+          type: string
+          description: response description
+    
   requestBodies:
-    startBooking:
+    startTrip:
       content:
         application/json:
           schema:
             type: object
             properties:
-              targetVehicle:
-                type: object
-                description: 대여하려는 vehicle를 특정할 수 있는 정보
-                properties:
-                  method:
-                    type: string
-                    enum: [QR, MANUAL_ENTRY]
-                  data:
-                    type: string
-                    description: "QR: base64 string, MANUAL_ENTRY: 수동 입력 코드"
-              userCoordinates:
-                $ref: '#/components/schemas/coordinates'
-      description: List of user object
+              user_id:
+                description: 사용자 ID
+                type: string
+              vehicle_sn:
+                description: 기기 ID
+                type: string
+              lat:
+                description: 위도
+                type: number
+              lng:
+                description: 경도
+                type: number
       required: true
-    finishBooking:
+    finishTrip:
       content:
         application/json:
           schema:
             type: object
             properties:
-              isForced:
-                type: boolean
-              userCoordinates:
-                $ref: '#/components/schemas/coordinates'
+              user_id:
+                type: string
+              lat:
+                description: 위도
+                type: string
+              lng:
+                description: 경도
+                type: string
       description: List of user object
       required: true
   responses:
