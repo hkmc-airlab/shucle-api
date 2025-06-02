@@ -137,28 +137,14 @@ paths:
       summary: 서비스 지역 목록 조회
       description: PM 서비스를 제공하는 지역 목록을 조회합니다.
       operationId: listRegions
-      parameters:
-        - name: fields
-          in: query
-          schema:
-            type: string
-            enum: [updateTime]
-          description: 지역 목록이 업데이트된 시간만 받아올 때 사용합니다.
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  updateTime:
-                    type: string
-                    format: date-time
-                  regions:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/region'
+                allOf:
+                  - $ref: '#/components/schemas/region'
         '400':
           $ref: '#/components/responses/400BadRequest'
         '401':
@@ -806,7 +792,7 @@ components:
           required: [id, updateTime]
     vehicle:
       type: object
-      required: [vehicle_sn, vehicle_type_id, location, battery, region_id, state, available_dest, parking_image]
+      required: [vehicle_sn, vehicle_type_id, location, battery, region_id, state, available_dist, parking_image]
       properties:
         vehicle_sn:
           type: string
@@ -828,9 +814,9 @@ components:
           enum:
             - IDLE
             - IN_USE
-        available_dest:
+        available_dist:
           type: integer
-          description: 이동 가능한 목적지
+          description: 이동 가능한 목적지(m단위)
         parking_image:
           type: string
           description: 주차 이미지 URL
