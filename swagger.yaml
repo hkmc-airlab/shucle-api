@@ -142,7 +142,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [ updateTime ]
+            enum: [updateTime]
           description: 지역 목록이 업데이트된 시간만 받아올 때 사용합니다.
       responses:
         '200':
