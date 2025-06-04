@@ -150,15 +150,8 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  updateTime:
-                    type: string
-                    format: date-time
-                  regions:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/region'
+                allOf:
+                  - $ref: '#/components/schemas/region'
         '400':
           $ref: '#/components/responses/400BadRequest'
         '401':
@@ -806,7 +799,7 @@ components:
           required: [id, updateTime]
     vehicle:
       type: object
-      required: [vehicle_sn, vehicle_type_id, location, battery, region_id, state, available_dest, parking_image]
+      required: [vehicle_sn, vehicle_type_id, location, battery, region_id, state, available_dist, parking_image]
       properties:
         vehicle_sn:
           type: string
@@ -828,9 +821,9 @@ components:
           enum:
             - IDLE
             - IN_USE
-        available_dest:
+        available_dist:
           type: integer
-          description: 이동 가능한 목적지
+          description: 주행 가능 거리(m단위)
         parking_image:
           type: string
           description: 주차 이미지 URL
