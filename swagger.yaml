@@ -823,7 +823,7 @@ components:
             - IN_USE
         available_dist:
           type: integer
-          description: 이동 가능한 목적지(m단위)
+          description: 주행 가능 거리(m단위)
         parking_image:
           type: string
           description: 주차 이미지 URL
